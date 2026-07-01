@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Field Logbook: Computing Pupil Voice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F1E4;
+    --paper-dark:#EEE4D0;
+    --ink:#2B2420;
+    --ink-soft:#5C5248;
+    --line:#D8CBAE;
+    --gold:#C9A24B;
+    --green:#2F6E4F;
+    --green-soft:#E4EFE6;
+    --orange:#C9612F;
+    --orange-soft:#F4E4D6;
+    --teal:#1F7A82;
+    --teal-soft:#DDEDEC;
+    --indigo:#5C4A9E;
+    --indigo-soft:#E7E1F4;
+    --accent: var(--green);
+    --accent-soft: var(--green-soft);
+    --shadow: 0 6px 0 rgba(43,36,32,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(201,162,75,0.10), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(31,122,130,0.08), transparent 45%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:760px; margin:0 auto; position:relative;}
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0; letter-spacing:-0.01em;}
+  .cover{
+    text-align:center;
+    padding:18px 0 30px;
+    border-bottom:2px solid var(--line);
+    margin-bottom:26px;
+    position:relative;
+  }
+  .eyebrow{
+    font-size:12px; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:800; margin-bottom:8px;
+  }
+  .cover h1{font-size:clamp(28px,5vw,40px); font-weight:900;}
+  .cover p{color:var(--ink-soft); margin-top:8px; font-size:15px; max-width:480px; margin-left:auto; margin-right:auto;}
+  .compass-btn{
+    position:absolute; top:0; right:0; width:34px; height:34px; border-radius:50%;
+    border:1.5px solid var(--line); background:var(--paper-dark); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:15px;
+    color:var(--ink-soft); opacity:0.55; transition:opacity .2s;
+  }
+  .compass-btn:hover{opacity:1;}
+
+  .card{
+    background:#fff; border:1.5px solid var(--line); border-radius:16px;
+    padding:26px 24px; box-shadow:var(--shadow);
+  }
+  .hidden{display:none !important;}
+
+  /* Unit picker */
+  .unit-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:520px){.unit-grid{grid-template-columns:1fr;}}
+  .unit-card{
+    border:1.5px solid var(--line); border-radius:16px; padding:20px 18px;
+    cursor:pointer; text-align:left; background:#fff; transition:transform .15s, box-shadow .15s;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .unit-card:hover{transform:translateY(-3px); box-shadow:var(--shadow);}
+  .unit-card .icon{font-size:30px;}
+  .unit-card h3{font-size:18px; font-weight:700;}
+  .unit-card p{margin:0; font-size:13px; color:var(--ink-soft);}
+  .unit-card[data-u="documentary"]{border-top:5px solid var(--green);}
+  .unit-card[data-u="earthquakes"]{border-top:5px solid var(--orange);}
+  .unit-card[data-u="photography"]{border-top:5px solid var(--teal);}
+  .unit-card[data-u="coding"]{border-top:5px solid var(--indigo);}
+
+  .stamp-tag{
+    display:inline-flex; align-items:center; gap:8px; padding:6px 14px;
+    border-radius:999px; font-weight:800; font-size:13px; margin-bottom:16px;
+  }
+
+  label.field-label{display:block; font-weight:800; font-size:14px; margin:18px 0 8px;}
+  input[type=text], select, textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:11px 13px;
+    font-family:'Nunito',sans-serif; font-size:16px; background:var(--paper); color:var(--ink);
+    -webkit-appearance:none; appearance:none; touch-action:manipulation;
+  }
+  textarea{min-height:100px; resize:vertical; line-height:1.4;}
+  input[type=text]:focus, select:focus, textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
+
+  .criteria-list{display:flex; flex-direction:column; gap:10px; margin-top:6px;}
+  .criteria-item{
+    display:flex; align-items:flex-start; gap:12px; padding:12px 14px;
+    border:1.5px solid var(--line); border-radius:12px; cursor:pointer; background:var(--paper);
+    transition:background .15s, border-color .15s;
+  }
+  .criteria-item input{margin-top:2px; width:18px; height:18px; accent-color:var(--accent);}
+  .criteria-item.checked{background:var(--accent-soft); border-color:var(--accent);}
+  .criteria-item span{font-size:14.5px; line-height:1.35;}
+
+  .slider-wrap{margin-top:8px; margin-bottom:20px; padding:16px 14px 12px; border:1.5px solid var(--line); border-radius:14px; background:var(--paper);}
+  .slider-face{font-size:36px; text-align:center; margin-bottom:8px; transition:transform .1s;}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:8px; border-radius:6px;
+    background:var(--paper-dark); outline:none; cursor:pointer; margin:6px 0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:28px; height:28px; border-radius:50%;
+    background:var(--accent); border:3px solid #fff; box-shadow:0 2px 5px rgba(43,36,32,0.3); cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:28px; height:28px; border-radius:50%; background:var(--accent); border:3px solid #fff;
+    box-shadow:0 2px 5px rgba(43,36,32,0.3); cursor:pointer;
+  }
+  .slider-scale{display:flex; justify-content:space-between; font-size:11px; color:var(--ink-soft); font-weight:700; margin-top:2px;}
+  .slider-caption{text-align:center; font-weight:800; font-size:14px; color:var(--accent); margin-top:8px;}
+
+  .nav-row{display:flex; justify-content:space-between; align-items:center; margin-top:26px; gap:10px;}
+  .btn{
+    border:none; border-radius:999px; padding:13px 22px; font-weight:800; font-size:14.5px;
+    cursor:pointer; font-family:'Nunito',sans-serif;
+  }
+  .btn-primary{background:var(--accent); color:#fff; box-shadow:0 4px 0 rgba(0,0,0,0.12);}
+  .btn-primary:active{transform:translateY(2px); box-shadow:none;}
+  .btn-primary:disabled{opacity:0.4; cursor:not-allowed;}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border:1.5px solid var(--line);}
+  .step-dots{display:flex; gap:6px; justify-content:center; margin-top:18px;}
+  .step-dots span{width:7px; height:7px; border-radius:50%; background:var(--line);}
+  .step-dots span.active{background:var(--accent); width:20px; border-radius:5px;}
+
+  .stamp-done{
+    text-align:center; padding:36px 10px;
+  }
+  .stamp-circle{
+    width:96px; height:96px; border-radius:50%; border:4px solid var(--accent); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-size:42px;
+    transform:rotate(-8deg); animation:stampIn .35s ease-out;
+  }
+  @keyframes stampIn{from{transform:scale(1.6) rotate(-8deg); opacity:0;} to{transform:scale(1) rotate(-8deg); opacity:1;}}
+
+  /* Teacher dashboard */
+  .dash-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .dash-tab{border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:8px 14px; font-weight:800; font-size:13px; cursor:pointer;}
+  .dash-tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .stat-row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px;}
+  .stat-box{flex:1; min-width:120px; border:1.5px solid var(--line); border-radius:12px; padding:14px; background:var(--paper);}
+  .stat-box .num{font-family:'Fraunces',serif; font-size:26px; font-weight:800;}
+  .stat-box .lab{font-size:11px; color:var(--ink-soft); font-weight:800; text-transform:uppercase; letter-spacing:.04em;}
+  .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
+  .bar-label{width:58%; font-size:13px;}
+  .bar-track{flex:1; height:10px; background:var(--paper-dark); border-radius:6px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:6px; background:var(--accent);}
+  .bar-pct{width:34px; font-size:12px; font-weight:800; text-align:right;}
+  .comment-list{display:flex; flex-direction:column; gap:8px; margin-top:8px; max-height:260px; overflow-y:auto;}
+  .comment{border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13.5px; background:var(--paper);}
+  .comment b{display:block; font-size:11px; color:var(--ink-soft); margin-bottom:3px; text-transform:uppercase; letter-spacing:.03em;}
+  .empty-note{font-size:13.5px; color:var(--ink-soft); text-align:center; padding:20px 0;}
+  .dash-actions{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px;}
+  .save-error{
+    margin-top:14px; padding:12px 14px; border-radius:10px; font-size:14px; font-weight:700;
+    background:#FCE8E4; border:1.5px solid #E8A89A; color:#8B3A2A;
+  }
+  .close-dash{margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <button class="compass-btn" id="teacherToggle" title="Teacher view">⚙</button>
+    <div class="eyebrow">Computing · Pupil Voice</div>
+    <h1>My Field Logbook</h1>
+    <p>Say what you thought about your computing lessons this term. Just be honest — there's no wrong answer.</p>
+  </div>
+
+  <!-- SCREEN: unit picker -->
+  <div id="screen-pick" class="card">
+    <h2 style="font-size:19px; margin-bottom:4px;">Which unit is this about?</h2>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin-top:2px; margin-bottom:18px;">Pick the one you've just finished, or the one you want to tell your teacher about.</p>
+    <div class="unit-grid">
+      <button class="unit-card" data-u="documentary">
+        <div class="icon">🎬</div>
+        <h3>Documentary Making</h3>
+        <p>Attenborough-style filmmaking</p>
+      </button>
+      <button class="unit-card" data-u="earthquakes">
+        <div class="icon">🌍</div>
+        <h3>Data Logging</h3>
+        <p>Investigating earthquakes</p>
+      </button>
+      <button class="unit-card" data-u="photography">
+        <div class="icon">📷</div>
+        <h3>Photography</h3>
+        <p>Taking and improving photos</p>
+      </button>
+      <button class="unit-card" data-u="coding">
+        <div class="icon">🐱</div>
+        <h3>Scratch Coding</h3>
+        <p>Building programs in Scratch</p>
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN: form flow -->
+  <div id="screen-form" class="card hidden">
+    <span class="stamp-tag" id="unitTag"></span>
+
+    <!-- step 0: name -->
+    <div class="step" data-step="0">
+      <h2 style="font-size:19px;">About you</h2>
+      <label class="field-label" for="pName">Your first name (optional)</label>
+      <input type="text" id="pName" placeholder="e.g. Sam" maxlength="30" autocomplete="given-name" inputmode="text" enterkeyhint="next">
+      <label class="field-label" for="pClass">Your class (optional)</label>
+      <select id="pClass">
+        <option value="">Choose your class…</option>
+        <option>Y3</option><option>Y4</option><option>Y5</option><option>Y6</option><option>Mixed class</option>
+      </select>
+    </div>
+
+    <!-- step 1: success criteria -->
+    <div class="step hidden" data-step="1">
+      <h2 style="font-size:19px;">What can you do now?</h2>
+      <p style="color:var(--ink-soft); font-size:13.5px; margin-top:2px;">Tick everything you can do confidently by yourself.</p>
+      <div class="criteria-list" id="criteriaList"></div>
+    </div>
+
+    <!-- step 2: enjoyment + learning -->
+    <div class="step hidden" data-step="2">
+      <h2 style="font-size:19px;">How did it go?</h2>
+      <label class="field-label">How much did you enjoy this unit?</label>
+      <div class="slider-wrap">
+        <div class="slider-face" id="starFace">🙂</div>
+        <input type="range" id="starSlider" min="0" max="100" value="50" step="1">
+        <div class="slider-scale"><span>Not for me</span><span>Loved it</span></div>
+        <div class="slider-caption" id="starCaption">It was OK</div>
+      </div>
+      <label class="field-label">Did you learn something new?</label>
+      <div class="slider-wrap">
+        <div class="slider-face" id="learnFace">🙂</div>
+        <input type="range" id="learnSlider" min="0" max="100" value="50" step="1">
+        <div class="slider-scale"><span>Not really</span><span>Yes, definitely</span></div>
+        <div class="slider-caption" id="learnCaption">A little bit</div>
+      </div>
+    </div>
+
+    <!-- step 3: comments -->
+    <div class="step hidden" data-step="3">
+      <h2 style="font-size:19px;">Your turn</h2>
+      <label class="field-label" for="cBest">What was the BEST part of this unit?</label>
+      <textarea id="cBest" placeholder="The best bit was…" maxlength="300" enterkeyhint="next"></textarea>
+      <label class="field-label" for="cImprove">What would you change next time?</label>
+      <textarea id="cImprove" placeholder="Next time I'd like…" maxlength="300" enterkeyhint="next"></textarea>
+      <label class="field-label" for="cTricky">Was anything tricky? (optional)</label>
+      <textarea id="cTricky" placeholder="I got stuck when…" maxlength="300" enterkeyhint="done"></textarea>
+    </div>
+
+    <div class="step-dots" id="stepDots"></div>
+    <div id="saveError" class="save-error hidden" role="alert">Could not save your entry. Please try again.</div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="backBtn">Back</button>
+      <button class="btn btn-primary" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: done -->
+  <div id="screen-done" class="card hidden">
+    <div class="stamp-done">
+      <div class="stamp-circle">✓</div>
+      <h2 style="font-size:22px;">Logged!</h2>
+      <p style="color:var(--ink-soft); margin-top:8px;">Thanks — your teacher will read this.</p>
+      <button class="btn btn-primary" id="againBtn" style="margin-top:22px;">Log another unit</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: teacher dashboard -->
+  <div id="screen-dash" class="card hidden">
+    <h2 style="font-size:20px; margin-bottom:14px;">Teacher view</h2>
+    <div class="dash-tabs" id="dashTabs"></div>
+    <div class="dash-actions" id="dashActions">
+      <button type="button" class="btn btn-primary" id="exportUnitCsv">Save CSV (this unit)</button>
+      <button type="button" class="btn btn-ghost" id="exportAllCsv">Save CSV (all units)</button>
+    </div>
+    <div id="dashBody"></div>
+    <button class="btn btn-ghost close-dash" id="closeDash">Close teacher view</button>
+  </div>
+
+</div>
+
+<script>
+const UNITS = {
+  documentary: {
+    label: "Documentary Making: Attenborough", short:"Documentary",
+    colour: "green", icon:"🎬",
+    criteria: [
+      "I can explain what makes a good documentary",
+      "I can plan my documentary using a storyboard",
+      "I can film using different shot types (e.g. close-up, wide shot)",
+      "I can record a clear voiceover or narration",
+      "I can edit my clips together",
+      "I can talk about a real nature or wildlife topic"
+    ]
+  },
+  earthquakes: {
+    label: "Data Logging: Earthquakes", short:"Data Logging",
+    colour:"orange", icon:"🌍",
+    criteria: [
+      "I can explain what a data logger does",
+      "I can use a data logger or sensor to collect data",
+      "I can read information from a graph or chart",
+      "I can explain what causes an earthquake",
+      "I can spot patterns or changes in data",
+      "I can use data to help answer a question"
+    ]
+  },
+  photography: {
+    label: "Photography", short:"Photography",
+    colour:"teal", icon:"📷",
+    criteria: [
+      "I can use a camera or iPad to take a photo",
+      "I can frame a good shot (e.g. rule of thirds)",
+      "I can change lighting or angle to improve a photo",
+      "I can edit a photo to make it better",
+      "I can explain what makes a photo effective",
+      "I can give feedback on someone else's photo"
+    ]
+  },
+  coding: {
+    label: "Scratch Coding", short:"Scratch Coding",
+    colour:"indigo", icon:"🐱",
+    criteria: [
+      "I can use loops (repeat blocks) in my code",
+      "I can use if/else blocks to make decisions",
+      "I can use variables to store information",
+      "I can find and fix bugs in my code",
+      "I can plan my program before building it",
+      "I can explain what my code does"
+    ]
+  }
+};
+
+let state = { unit:null, name:"", cls:"", criteria:{}, stars:0, learn:null, best:"", improve:"", tricky:"" };
+let stepIndex = 0;
+const totalSteps = 4;
+
+const $ = id => document.getElementById(id);
+
+// ---- unit picking ----
+document.querySelectorAll(".unit-card").forEach(card=>{
+  card.addEventListener("click", ()=>{
+    const u = card.dataset.u;
+    startUnit(u);
+  });
+});
+
+function setAccent(colour){
+  const map = {
+    green:["--green","--green-soft"], orange:["--orange","--orange-soft"],
+    teal:["--teal","--teal-soft"], indigo:["--indigo","--indigo-soft"]
+  };
+  const root = document.documentElement.style;
+  root.setProperty("--accent", `var(${map[colour][0]})`);
+  root.setProperty("--accent-soft", `var(${map[colour][1]})`);
+}
+
+function startUnit(u){
+  state = { unit:u, name:"", cls:"", criteria:{}, stars:0, learn:null, best:"", improve:"", tricky:"" };
+  stepIndex = 0;
+  const def = UNITS[u];
+  setAccent(def.colour);
+  $("unitTag").textContent = def.icon + "  " + def.label;
+  $("unitTag").style.background = `var(--accent-soft)`;
+  $("unitTag").style.color = `var(--accent)`;
+
+  // build criteria list
+  const list = $("criteriaList");
+  list.innerHTML = "";
+  def.criteria.forEach((c,i)=>{
+    const row = document.createElement("label");
+    row.className = "criteria-item";
+    row.innerHTML = `<input type="checkbox" data-i="${i}"><span>${c}</span>`;
+    row.querySelector("input").addEventListener("change", e=>{
+      state.criteria[i] = e.target.checked;
+      row.classList.toggle("checked", e.target.checked);
+    });
+    list.appendChild(row);
+  });
+
+  $("pName").value = safeGet("pupilLogName") || "";
+  $("pClass").value = safeGet("pupilLogClass") || "";
+  $("cBest").value = ""; $("cImprove").value = ""; $("cTricky").value = "";
+
+  $("starSlider").value = 50;
+  $("learnSlider").value = 50;
+  state.stars = 3;
+  state.learn = "little";
+  updateStarSlider();
+  updateLearnSlider();
+
+  show("screen-form");
+  renderStep();
+}
+
+// Persists on this iPad/browser via localStorage (works when opened from Files or hosted on your site).
+const RECORDS_KEY = "pupilvoice:records";
+
+function safeGet(key){
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
+function safeSet(key, val){
+  try{ localStorage.setItem(key, val); return true; }catch(e){ return false; }
+}
+
+function loadAllRecords(){
+  try{
+    const raw = safeGet(RECORDS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+function saveRecord(record){
+  const records = loadAllRecords();
+  records.push(record);
+  return safeSet(RECORDS_KEY, JSON.stringify(records));
+}
+
+function recordsForUnit(unit){
+  return loadAllRecords().filter(r => r.unit === unit);
+}
+
+const starLabels = ["Not for me", "It was OK", "I liked it", "Really good", "Loved it"];
+const starFaces = ["😕", "🙂", "😀", "😄", "🤩"];
+function starBucket(v){
+  // 0-100 split into 5 even bands, smooth to drag but stored as a clean 1-5 rating
+  return Math.min(5, Math.max(1, Math.ceil(v / 20)));
+}
+function updateStarSlider(){
+  const v = Number($("starSlider").value);
+  const bucket = starBucket(v);
+  state.stars = bucket;
+  $("starFace").textContent = starFaces[bucket - 1];
+  $("starCaption").textContent = starLabels[bucket - 1];
+}
+$("starSlider").addEventListener("input", updateStarSlider);
+
+const learnLabels = ["Not really", "A little bit", "Yes, definitely"];
+const learnFaces = ["😐", "🙂", "🤩"];
+const learnValues = ["no", "little", "yes"];
+function learnBucket(v){
+  if(v < 34) return 0;
+  if(v < 67) return 1;
+  return 2;
+}
+function updateLearnSlider(){
+  const v = Number($("learnSlider").value);
+  const bucket = learnBucket(v);
+  state.learn = learnValues[bucket];
+  $("learnFace").textContent = learnFaces[bucket];
+  $("learnCaption").textContent = learnLabels[bucket];
+}
+$("learnSlider").addEventListener("input", updateLearnSlider);
+
+function show(id){
+  ["screen-pick","screen-form","screen-done","screen-dash"].forEach(s=>{
+    $(s).classList.toggle("hidden", s!==id);
+  });
+}
+
+function renderStep(){
+  document.querySelectorAll(".step").forEach(s=>{
+    s.classList.toggle("hidden", Number(s.dataset.step)!==stepIndex);
+  });
+  const dots = $("stepDots");
+  dots.innerHTML = "";
+  for(let i=0;i<totalSteps;i++){
+    const d = document.createElement("span");
+    if(i===stepIndex) d.classList.add("active");
+    dots.appendChild(d);
+  }
+  $("backBtn").style.visibility = stepIndex===0 ? "hidden" : "visible";
+  $("nextBtn").textContent = stepIndex===totalSteps-1 ? "Finish & log it" : "Next";
+  $("saveError").classList.add("hidden");
+  focusStepField();
+}
+
+function focusStepField(){
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{
+      if(stepIndex === 0) $("pName").focus({ preventScroll:false });
+      else if(stepIndex === 3) $("cBest").focus({ preventScroll:false });
+    }, 120);
+  });
+}
+
+$("backBtn").addEventListener("click", ()=>{
+  if(stepIndex>0){ stepIndex--; renderStep(); }
+});
+
+$("nextBtn").addEventListener("click", ()=>{
+  if(stepIndex < totalSteps-1){
+    stepIndex++;
+    renderStep();
+  } else {
+    submitEntry();
+  }
+});
+
+const learnDisplay = { no:"Not really", little:"A little bit", yes:"Yes, definitely" };
+
+function submitEntry(){
+  state.name = $("pName").value.trim();
+  state.cls = $("pClass").value;
+  state.best = $("cBest").value.trim();
+  state.improve = $("cImprove").value.trim();
+  state.tricky = $("cTricky").value.trim();
+
+  if(state.name) safeSet("pupilLogName", state.name);
+  if(state.cls) safeSet("pupilLogClass", state.cls);
+
+  const def = UNITS[state.unit];
+  const record = {
+    unit: state.unit,
+    unitLabel: def.short,
+    name: state.name || "Anonymous",
+    cls: state.cls || "—",
+    criteriaChecked: def.criteria.filter((c,i)=>state.criteria[i]).length,
+    criteriaTotal: def.criteria.length,
+    criteria: def.criteria.map((c,i)=>({ text:c, checked: !!state.criteria[i] })),
+    stars: state.stars,
+    learn: state.learn,
+    best: state.best,
+    improve: state.improve,
+    tricky: state.tricky,
+    ts: Date.now()
+  };
+
+  if(saveRecord(record)){
+    $("saveError").classList.add("hidden");
+    show("screen-done");
+  }else{
+    $("saveError").classList.remove("hidden");
+  }
+}
+
+$("againBtn").addEventListener("click", ()=>{
+  show("screen-pick");
+});
+
+// ---- teacher dashboard ----
+let dashActiveUnit = "documentary";
+
+$("teacherToggle").addEventListener("click", ()=>{
+  show("screen-dash");
+  loadDashboard();
+});
+$("closeDash").addEventListener("click", ()=> show("screen-pick"));
+
+$("exportUnitCsv").addEventListener("click", ()=>{
+  exportCsv(recordsForUnit(dashActiveUnit), `pupil-voice-${dashActiveUnit}.csv`, dashActiveUnit);
+});
+$("exportAllCsv").addEventListener("click", ()=>{
+  exportCsv(loadAllRecords(), "pupil-voice-all-units.csv", null);
+});
+
+function loadDashboard(){
+  const tabs = $("dashTabs");
+  tabs.innerHTML = "";
+  Object.keys(UNITS).forEach(u=>{
+    const t = document.createElement("button");
+    t.className = "dash-tab" + (u===dashActiveUnit ? " active":"");
+    t.textContent = UNITS[u].icon + " " + UNITS[u].short;
+    t.addEventListener("click", ()=>{ dashActiveUnit = u; loadDashboard(); });
+    tabs.appendChild(t);
+  });
+
+  const body = $("dashBody");
+  const records = recordsForUnit(dashActiveUnit);
+
+  if(records.length === 0){
+    body.innerHTML = "<p class='empty-note'>No entries logged for this unit yet.</p>";
+    return;
+  }
+
+  const def = UNITS[dashActiveUnit];
+  const n = records.length;
+  const avgStars = n ? (records.reduce((a,r)=>a+(r.stars||0),0)/n) : 0;
+  const learnYes = records.filter(r=>r.learn==="yes").length;
+
+  let html = "";
+  html += `<div class="stat-row">
+    <div class="stat-box"><div class="num">${n}</div><div class="lab">Responses</div></div>
+    <div class="stat-box"><div class="num">${avgStars.toFixed(1)} ★</div><div class="lab">Avg enjoyment</div></div>
+    <div class="stat-box"><div class="num">${n? Math.round(learnYes/n*100):0}%</div><div class="lab">Learned something new</div></div>
+  </div>`;
+
+  html += `<h3 style="font-size:15px; margin-bottom:10px;">Success criteria: % of pupils confident</h3>`;
+  def.criteria.forEach((c,i)=>{
+    const checkedCount = records.filter(r=> r.criteria && r.criteria[i] && r.criteria[i].checked).length;
+    const pct = n ? Math.round(checkedCount/n*100) : 0;
+    html += `<div class="bar-row">
+      <div class="bar-label">${escapeHtml(c)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="bar-pct">${pct}%</div>
+    </div>`;
+  });
+
+  html += `<h3 style="font-size:15px; margin:18px 0 8px;">Best part of the unit</h3><div class="comment-list">`;
+  const bestComments = records.filter(r=>r.best);
+  html += bestComments.length ? bestComments.map(r=>`<div class="comment"><b>${escapeHtml(r.name)} · ${escapeHtml(r.cls)}</b>${escapeHtml(r.best)}</div>`).join("") : `<p class="empty-note">No comments yet.</p>`;
+  html += `</div>`;
+
+  html += `<h3 style="font-size:15px; margin:18px 0 8px;">How to make it better</h3><div class="comment-list">`;
+  const improveComments = records.filter(r=>r.improve);
+  html += improveComments.length ? improveComments.map(r=>`<div class="comment"><b>${escapeHtml(r.name)} · ${escapeHtml(r.cls)}</b>${escapeHtml(r.improve)}</div>`).join("") : `<p class="empty-note">No comments yet.</p>`;
+  html += `</div>`;
+
+  const trickyComments = records.filter(r=>r.tricky);
+  if(trickyComments.length){
+    html += `<h3 style="font-size:15px; margin:18px 0 8px;">What felt tricky</h3><div class="comment-list">`;
+    html += trickyComments.map(r=>`<div class="comment"><b>${escapeHtml(r.name)} · ${escapeHtml(r.cls)}</b>${escapeHtml(r.tricky)}</div>`).join("");
+    html += `</div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+function formatDate(ts){
+  return new Date(ts).toLocaleString("en-GB", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
+}
+
+function csvCell(val){
+  const s = String(val ?? "");
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function recordsToCsv(records, fixedUnit){
+  if(!records.length) return "";
+
+  const criteriaHeaders = fixedUnit ? (UNITS[fixedUnit]?.criteria || []) : [];
+  const commentHeaders = ["Best part", "How to improve", "What felt tricky"];
+
+  const baseHeaders = ["Date", "Unit", "Name", "Class", "Enjoyment (1-5)", "Learned something new"];
+  const headers = fixedUnit
+    ? baseHeaders.concat(criteriaHeaders, commentHeaders)
+    : baseHeaders.concat(["Criteria confident"], commentHeaders);
+
+  const rows = [headers.map(csvCell).join(",")];
+
+  records.forEach(r=>{
+    const unitLabel = r.unitLabel || UNITS[r.unit]?.short || r.unit;
+    const row = [
+      formatDate(r.ts),
+      unitLabel,
+      r.name,
+      r.cls,
+      r.stars,
+      learnDisplay[r.learn] || r.learn
+    ];
+
+    if(fixedUnit){
+      const crit = r.criteria || [];
+      criteriaHeaders.forEach((_, i)=>{
+        row.push(crit[i] && crit[i].checked ? "Y" : "N");
+      });
+    }else{
+      row.push(`${r.criteriaChecked || 0}/${r.criteriaTotal || 0}`);
+    }
+    row.push(r.best || "", r.improve || "", r.tricky || "");
+    rows.push(row.map(csvCell).join(","));
+  });
+
+  return rows.join("\r\n");
+}
+
+function exportCsv(records, filename, fixedUnit){
+  if(!records.length){
+    alert("No entries to export yet.");
+    return;
+  }
+  const csv = "\uFEFF" + recordsToCsv(records, fixedUnit);
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+  const file = new File([blob], filename, { type:"text/csv" });
+
+  if(navigator.canShare && navigator.canShare({ files:[file] })){
+    navigator.share({ files:[file], title: filename }).catch(()=> downloadBlob(blob, filename));
+    return;
+  }
+  downloadBlob(blob, filename);
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+}
+
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
