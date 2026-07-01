@@ -47,20 +47,29 @@
     border-bottom:2px solid var(--line);
     margin-bottom:26px;
     position:relative;
+    padding-top:42px;
   }
-  .eyebrow{
-    font-size:12px; letter-spacing:0.18em; text-transform:uppercase;
-    color:var(--ink-soft); font-weight:800; margin-bottom:8px;
+  .cover-tools{
+    position:absolute; top:0; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
   }
-  .cover h1{font-size:clamp(28px,5vw,40px); font-weight:900;}
-  .cover p{color:var(--ink-soft); margin-top:8px; font-size:15px; max-width:480px; margin-left:auto; margin-right:auto;}
+  .tool-btn{
+    width:34px; height:34px; border-radius:50%;
+    border:1.5px solid var(--line); background:var(--paper-dark); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:14px;
+    color:var(--ink-soft); opacity:0.55; transition:opacity .2s;
+    font-family:'Nunito',sans-serif; padding:0;
+  }
+  .tool-btn:hover,.tool-btn:focus{opacity:1; outline:2px solid var(--accent); outline-offset:1px;}
   .compass-btn{
-    position:absolute; top:0; right:0; width:34px; height:34px; border-radius:50%;
+    width:34px; height:34px; border-radius:50%;
     border:1.5px solid var(--line); background:var(--paper-dark); cursor:pointer;
     display:flex; align-items:center; justify-content:center; font-size:15px;
     color:var(--ink-soft); opacity:0.55; transition:opacity .2s;
   }
-  .compass-btn:hover{opacity:1;}
+  .compass-btn:hover,.compass-btn:focus{opacity:1; outline:2px solid var(--accent); outline-offset:1px;}
+  .cover h1{font-size:clamp(28px,5vw,40px); font-weight:900;}
+  .cover p{color:var(--ink-soft); margin-top:8px; font-size:15px; max-width:480px; margin-left:auto; margin-right:auto;}
 
   .card{
     background:#fff; border:1.5px solid var(--line); border-radius:16px;
@@ -172,22 +181,34 @@
     background:#FCE8E4; border:1.5px solid #E8A89A; color:#8B3A2A;
   }
   .close-dash{margin-top:20px;}
+  body.pseudo-fullscreen{
+    padding:0;
+    overflow:hidden;
+  }
+  body.pseudo-fullscreen .wrap{
+    max-width:none;
+    height:100dvh;
+    overflow-y:auto;
+    padding:16px 16px 40px;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <div class="cover">
-    <button class="compass-btn" id="teacherToggle" title="Teacher view">⚙</button>
-    <div class="eyebrow">Computing · Pupil Voice</div>
+    <div class="cover-tools">
+      <button type="button" class="tool-btn" id="fullscreenBtn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+      <button type="button" class="compass-btn" id="teacherToggle" title="Teacher view" aria-label="Teacher view">⚙</button>
+    </div>
     <h1>Computing - pupil voice</h1>
-    <p>Say what you thought about your computing lessons this term. Just be honest — there's no wrong answer.</p>
+    <p>What did you think of your computing lessons this term? No wrong answers.</p>
   </div>
 
   <!-- SCREEN: unit picker -->
   <div id="screen-pick" class="card">
     <h2 style="font-size:19px; margin-bottom:4px;">Which unit is this about?</h2>
-    <p style="color:var(--ink-soft); font-size:13.5px; margin-top:2px; margin-bottom:18px;">Pick the one you've just finished, or the one you want to tell your teacher about.</p>
+    <p style="color:var(--ink-soft); font-size:13.5px; margin-top:2px; margin-bottom:18px;">Pick the unit you have just finished, or the one you want to talk about.</p>
     <div class="unit-grid">
       <button class="unit-card" data-u="documentary">
         <div class="icon">🎬</div>
@@ -223,7 +244,7 @@
       <input type="text" id="pName" placeholder="e.g. Sam" maxlength="30" autocomplete="given-name" inputmode="text" enterkeyhint="next">
       <label class="field-label" for="pClass">Your class (optional)</label>
       <select id="pClass">
-        <option value="">Choose your class…</option>
+        <option value="">Choose your class...</option>
         <option>Y3</option><option>Y4</option><option>Y5</option><option>Y6</option><option>Mixed class</option>
       </select>
     </div>
@@ -231,7 +252,7 @@
     <!-- step 1: success criteria -->
     <div class="step hidden" data-step="1">
       <h2 style="font-size:19px;">What can you do now?</h2>
-      <p style="color:var(--ink-soft); font-size:13.5px; margin-top:2px;">Tick everything you can do confidently by yourself.</p>
+      <p style="color:var(--ink-soft); font-size:13.5px; margin-top:2px;">Tick what you can do on your own.</p>
       <div class="criteria-list" id="criteriaList"></div>
     </div>
 
@@ -249,24 +270,24 @@
       <div class="slider-wrap">
         <div class="slider-face" id="learnFace">🙂</div>
         <input type="range" id="learnSlider" min="0" max="100" value="50" step="1">
-        <div class="slider-scale"><span>Not really</span><span>Yes, definitely</span></div>
+        <div class="slider-scale"><span>Not really</span><span>Yes</span></div>
         <div class="slider-caption" id="learnCaption">A little bit</div>
       </div>
     </div>
 
     <!-- step 3: comments -->
     <div class="step hidden" data-step="3">
-      <h2 style="font-size:19px;">Your turn</h2>
-      <label class="field-label" for="cBest">What was the BEST part of this unit?</label>
-      <textarea id="cBest" placeholder="The best bit was…" maxlength="300" enterkeyhint="next"></textarea>
+      <h2 style="font-size:19px;">A few more questions</h2>
+      <label class="field-label" for="cBest">What was the best part of this unit?</label>
+      <textarea id="cBest" placeholder="The best bit was..." maxlength="300" enterkeyhint="next"></textarea>
       <label class="field-label" for="cImprove">What would you change next time?</label>
-      <textarea id="cImprove" placeholder="Next time I'd like…" maxlength="300" enterkeyhint="next"></textarea>
+      <textarea id="cImprove" placeholder="Next time I'd like..." maxlength="300" enterkeyhint="next"></textarea>
       <label class="field-label" for="cTricky">Was anything tricky? (optional)</label>
-      <textarea id="cTricky" placeholder="I got stuck when…" maxlength="300" enterkeyhint="done"></textarea>
+      <textarea id="cTricky" placeholder="I got stuck when..." maxlength="300" enterkeyhint="done"></textarea>
     </div>
 
     <div class="step-dots" id="stepDots"></div>
-    <div id="saveError" class="save-error hidden" role="alert">Could not save your entry. Please try again.</div>
+    <div id="saveError" class="save-error hidden" role="alert">Couldn't save. Try again.</div>
     <div class="nav-row">
       <button class="btn btn-ghost" id="backBtn">Back</button>
       <button class="btn btn-primary" id="nextBtn">Next</button>
@@ -277,9 +298,12 @@
   <div id="screen-done" class="card hidden">
     <div class="stamp-done">
       <div class="stamp-circle">✓</div>
-      <h2 style="font-size:22px;">Logged!</h2>
-      <p style="color:var(--ink-soft); margin-top:8px;">Thanks — your teacher will read this.</p>
-      <button class="btn btn-primary" id="againBtn" style="margin-top:22px;">Log another unit</button>
+      <h2 style="font-size:22px;">Saved</h2>
+      <p style="color:var(--ink-soft); margin-top:8px;">Thanks. Your teacher will read this.</p>
+      <div class="nav-row" style="justify-content:center; margin-top:22px;">
+        <button class="btn btn-ghost" id="doneBackBtn">Back</button>
+        <button class="btn btn-primary" id="againBtn">Log another unit</button>
+      </div>
     </div>
   </div>
 
@@ -292,7 +316,7 @@
       <button type="button" class="btn btn-ghost" id="exportAllCsv">Save CSV (all units)</button>
     </div>
     <div id="dashBody"></div>
-    <button class="btn btn-ghost close-dash" id="closeDash">Close teacher view</button>
+    <button class="btn btn-ghost close-dash" id="closeDash">Back</button>
   </div>
 
 </div>
@@ -453,7 +477,7 @@ function updateStarSlider(){
 }
 $("starSlider").addEventListener("input", updateStarSlider);
 
-const learnLabels = ["Not really", "A little bit", "Yes, definitely"];
+const learnLabels = ["Not really", "A little bit", "Yes"];
 const learnFaces = ["😐", "🙂", "🤩"];
 const learnValues = ["no", "little", "yes"];
 function learnBucket(v){
@@ -487,8 +511,8 @@ function renderStep(){
     if(i===stepIndex) d.classList.add("active");
     dots.appendChild(d);
   }
-  $("backBtn").style.visibility = stepIndex===0 ? "hidden" : "visible";
-  $("nextBtn").textContent = stepIndex===totalSteps-1 ? "Finish & log it" : "Next";
+  $("backBtn").style.visibility = "visible";
+  $("nextBtn").textContent = stepIndex===totalSteps-1 ? "Save" : "Next";
   $("saveError").classList.add("hidden");
   focusStepField();
 }
@@ -503,7 +527,12 @@ function focusStepField(){
 }
 
 $("backBtn").addEventListener("click", ()=>{
-  if(stepIndex>0){ stepIndex--; renderStep(); }
+  if(stepIndex>0){
+    stepIndex--;
+    renderStep();
+  }else{
+    show("screen-pick");
+  }
 });
 
 $("nextBtn").addEventListener("click", ()=>{
@@ -515,7 +544,7 @@ $("nextBtn").addEventListener("click", ()=>{
   }
 });
 
-const learnDisplay = { no:"Not really", little:"A little bit", yes:"Yes, definitely" };
+const learnDisplay = { no:"Not really", little:"A little bit", yes:"Yes" };
 
 function submitEntry(){
   state.name = $("pName").value.trim();
@@ -532,7 +561,7 @@ function submitEntry(){
     unit: state.unit,
     unitLabel: def.short,
     name: state.name || "Anonymous",
-    cls: state.cls || "—",
+    cls: state.cls || "-",
     criteriaChecked: def.criteria.filter((c,i)=>state.criteria[i]).length,
     criteriaTotal: def.criteria.length,
     criteria: def.criteria.map((c,i)=>({ text:c, checked: !!state.criteria[i] })),
@@ -553,6 +582,9 @@ function submitEntry(){
 }
 
 $("againBtn").addEventListener("click", ()=>{
+  show("screen-pick");
+});
+$("doneBackBtn").addEventListener("click", ()=>{
   show("screen-pick");
 });
 
@@ -587,7 +619,7 @@ function loadDashboard(){
   const records = recordsForUnit(dashActiveUnit);
 
   if(records.length === 0){
-    body.innerHTML = "<p class='empty-note'>No entries logged for this unit yet.</p>";
+    body.innerHTML = "<p class='empty-note'>Nothing saved for this unit yet.</p>";
     return;
   }
 
@@ -599,7 +631,7 @@ function loadDashboard(){
   let html = "";
   html += `<div class="stat-row">
     <div class="stat-box"><div class="num">${n}</div><div class="lab">Responses</div></div>
-    <div class="stat-box"><div class="num">${avgStars.toFixed(1)} ★</div><div class="lab">Avg enjoyment</div></div>
+    <div class="stat-box"><div class="num">${avgStars.toFixed(1)} ★</div><div class="lab">Average enjoyment</div></div>
     <div class="stat-box"><div class="num">${n? Math.round(learnYes/n*100):0}%</div><div class="lab">Learned something new</div></div>
   </div>`;
 
@@ -619,7 +651,7 @@ function loadDashboard(){
   html += bestComments.length ? bestComments.map(r=>`<div class="comment"><b>${escapeHtml(r.name)} · ${escapeHtml(r.cls)}</b>${escapeHtml(r.best)}</div>`).join("") : `<p class="empty-note">No comments yet.</p>`;
   html += `</div>`;
 
-  html += `<h3 style="font-size:15px; margin:18px 0 8px;">How to make it better</h3><div class="comment-list">`;
+  html += `<h3 style="font-size:15px; margin:18px 0 8px;">What pupils would change</h3><div class="comment-list">`;
   const improveComments = records.filter(r=>r.improve);
   html += improveComments.length ? improveComments.map(r=>`<div class="comment"><b>${escapeHtml(r.name)} · ${escapeHtml(r.cls)}</b>${escapeHtml(r.improve)}</div>`).join("") : `<p class="empty-note">No comments yet.</p>`;
   html += `</div>`;
@@ -684,7 +716,7 @@ function recordsToCsv(records, fixedUnit){
 
 function exportCsv(records, filename, fixedUnit){
   if(!records.length){
-    alert("No entries to export yet.");
+    alert("Nothing to export yet.");
     return;
   }
   const csv = "\uFEFF" + recordsToCsv(records, fixedUnit);
@@ -713,6 +745,53 @@ function escapeHtml(str){
   const d = document.createElement("div");
   d.textContent = str;
   return d.innerHTML;
+}
+
+// ---- fullscreen ----
+const fsBtn = $("fullscreenBtn");
+let pseudoFullscreen = false;
+
+function isFullscreen(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement || pseudoFullscreen);
+}
+function updateFullscreenBtn(){
+  if(!fsBtn) return;
+  const on = isFullscreen();
+  fsBtn.textContent = on ? "⤡" : "⛶";
+  fsBtn.title = on ? "Exit fullscreen" : "Fullscreen";
+  fsBtn.setAttribute("aria-label", fsBtn.title);
+}
+function toggleFullscreen(){
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if(document.fullscreenElement || document.webkitFullscreenElement){
+    exit?.call(document);
+    return;
+  }
+  if(pseudoFullscreen){
+    pseudoFullscreen = false;
+    document.body.classList.remove("pseudo-fullscreen");
+    updateFullscreenBtn();
+    return;
+  }
+  if(req){
+    Promise.resolve(req.call(el)).catch(()=>{
+      pseudoFullscreen = true;
+      document.body.classList.add("pseudo-fullscreen");
+      updateFullscreenBtn();
+    });
+  }else{
+    pseudoFullscreen = true;
+    document.body.classList.add("pseudo-fullscreen");
+    updateFullscreenBtn();
+  }
+}
+if(fsBtn){
+  fsBtn.addEventListener("click", toggleFullscreen);
+  document.addEventListener("fullscreenchange", updateFullscreenBtn);
+  document.addEventListener("webkitfullscreenchange", updateFullscreenBtn);
+  updateFullscreenBtn();
 }
 </script>
 </body>
